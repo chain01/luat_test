@@ -6,7 +6,7 @@
 -- @release 2018.03.28
 
 module(...,package.seeall)
-
+require"pins"
 --- socket客户端数据接收处理
 -- @param socketClient，socket客户端对象
 -- @return 处理成功返回true，处理出错返回false
@@ -17,6 +17,7 @@ function proc(socketClient)
 	local Rec_Data
 	local Rec_Status
 	local Rec_Cmd
+	local key = pins.setup(pio.P0_6,1)
     while true do
         result,data = socketClient:recv(2000)
         --接收到数据
@@ -38,6 +39,9 @@ function proc(socketClient)
 				Rec_Cmd=Rec_Data["data"]
 				if	Rec_Cmd==1 then
 					sys.publish("SOCKET_RECV_DATA","On")
+					key(0)
+					sys.wait(1000)          -- 挂起1000ms，同理为每隔1000ms运行一次
+					key(1)
 					else
 					sys.publish("SOCKET_RECV_DATA","Off")
 				end

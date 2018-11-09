@@ -16,21 +16,38 @@ local uartID = 1
 
 local function taskRead()
     local cacheData = ""
+	local Uart_Datalen
+	local Uart_Num
+	local Json_Struart1=[[{"t": 3,"datatype":1,"datas":{"home":"]]
+	local Json_Struart2=[["},"msgid": 123}]]
+	local Json_StrUart
     while true do
         local s = uart.read(uartID,"*l")
         if s == "" then
             uart.on(uartID,"receive",function() sys.publish("UART_RECEIVE") end)
             if not sys.waitUntil("UART_RECEIVE",1000) then
+				if	string.find(cacheData,"on") then
+					Uart_Datalen=string.len(cacheData)
+					Uart_Num=cacheData:sub(3,Uart_Datalen)
+					Json_StrUart=Json_Struart1..Uart_Num..Json_Struart2
+					sys.publish("UART_RECV_DATA",Json_StrUart)
+				end
                 sys.publish("UART_RECV_DATA",cacheData:sub(1,1024))
                 cacheData = cacheData:sub(1025,-1)
             end
             uart.on(uartID,"receive")
         else
             cacheData = cacheData..s
-            if cacheData:len()>=1024 then
-                sys.publish("UART_RECV_DATA",cacheData:sub(1,1024))
-                cacheData = cacheData:sub(1025,-1)
-            end
+			if	string.find(cacheData,"on") then
+				if cacheData:len()>=1024 then
+					Uart_Datalen=string.len(cacheData)
+					Uart_Num=cacheData:sub(3,Uart_Datalen)
+					Json_StrUart=Json_Struart1..Uart_Num..Json_Struart2
+					--datastr=[[{"t": 3,"datatype":1,"datas":{"temp":"23","humy":"46"},"msgid": 123}]]
+					sys.publish("UART_RECV_DATA",Json_StrUart)
+					cacheData = cacheData:sub(1025,-1)
+				end
+			end	
         end
     end
 end
