@@ -15,6 +15,19 @@ local function insertMsg(data,user)
     table.insert(msgQueue,{data=data,user=user})
 end
 
+--发送连接请求
+--@string device 设备标识 
+--@string key 传输密钥
+function link()
+	local device="testkey01"
+	local key="92b7ae622ea74262b9f0db8302272965"
+	local Json_Key
+	local Json_Str1=[[{"t": 1,"device": "]]
+	local Json_Str2=[[","key":"]]
+	local Json_Str3=[[","ver":"v1.1"}]]
+	Json_Key=Json_Str1..device..Json_Str2..key..Json_Str3
+	insertMsg(Json_Key)
+end
 
 --- 去初始化“socket客户端数据发送”
 -- @return 无

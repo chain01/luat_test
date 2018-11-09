@@ -46,7 +46,7 @@ sys.taskInit(
                 if socketClient:connect("120.77.58.34","8700") then
                     retryConnectCnt = 0
                     ready = true
-
+					socketOutMsg.link()
                     --循环处理接收和发送的数据
                     while true do
                         if not socketInMsg.proc(socketClient) then log.error("socketTask.socketInMsg.proc error") break end
