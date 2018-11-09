@@ -13,14 +13,17 @@ module(...,package.seeall)
 -- @usage socketInMsg.proc(socketClient)
 function proc(socketClient)
     local result,data
+	local Heart_Str="$OK##\r"
     while true do
         result,data = socketClient:recv(2000)
         --接收到数据
         if result then
             log.info("socketInMsg.proc",data)
-                
-            sys.publish("SOCKET_RECV_DATA",data)
-            
+			if string.find(data,"$#AT") then
+				 sys.publish("UART_RECV_DATA",Heart_Str)
+            else   
+				sys.publish("SOCKET_RECV_DATA",data)
+            end
             --如果socketOutMsg中有等待发送的数据，则立即退出本循环
             if socketOutMsg.waitForSend() then return true end
         else
