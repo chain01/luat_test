@@ -43,7 +43,7 @@ sys.taskInit(
                 --创建一个socket tcp客户端
                 local socketClient = socket.tcp()
                 --阻塞执行socket connect动作，直至成功
-                if socketClient:connect("36.7.87.100","6500") then
+                if socketClient:connect("120.77.58.34","8700") then
                     retryConnectCnt = 0
                     ready = true
 
