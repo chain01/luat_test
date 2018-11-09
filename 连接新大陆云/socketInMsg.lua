@@ -16,6 +16,7 @@ function proc(socketClient)
 	local Heart_Str="$OK##\r"
 	local Rec_Data
 	local Rec_Status
+	local Rec_Cmd
     while true do
         result,data = socketClient:recv(2000)
         --接收到数据
@@ -29,9 +30,18 @@ function proc(socketClient)
 				Rec_Status=Rec_Data["status"]
 				--log.info("Rec_Status",Rec_Status)  --控制台打印status值供调试
 				if Rec_Status==0 then
-				sys.publish("SOCKET_RECV_DATA","OK")
+					sys.publish("SOCKET_RECV_DATA","OK")
 				end
             end
+			if string.find(data,"data") then
+				Rec_Data=json.decode(data)
+				Rec_Cmd=Rec_Data["data"]
+				if	Rec_Cmd==1 then
+					sys.publish("SOCKET_RECV_DATA","On")
+					else
+					sys.publish("SOCKET_RECV_DATA","Off")
+				end
+			end	
             --如果socketOutMsg中有等待发送的数据，则立即退出本循环
             if socketOutMsg.waitForSend() then return true end
         else
