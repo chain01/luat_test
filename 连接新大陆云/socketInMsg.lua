@@ -14,6 +14,8 @@ module(...,package.seeall)
 function proc(socketClient)
     local result,data
 	local Heart_Str="$OK##\r"
+	local Rec_Data
+	local Rec_Status
     while true do
         result,data = socketClient:recv(2000)
         --接收到数据
@@ -21,8 +23,14 @@ function proc(socketClient)
             log.info("socketInMsg.proc",data)
 			if string.find(data,"$#AT") then
 				 sys.publish("UART_RECV_DATA",Heart_Str)
-            else   
-				sys.publish("SOCKET_RECV_DATA",data)
+            end   
+			if string.find(data,"status") then
+				Rec_Data=json.decode(data)
+				Rec_Status=Rec_Data["status"]
+				--log.info("Rec_Status",Rec_Status)  --控制台打印status值供调试
+				if Rec_Status==0 then
+				sys.publish("SOCKET_RECV_DATA","OK")
+				end
             end
             --如果socketOutMsg中有等待发送的数据，则立即退出本循环
             if socketOutMsg.waitForSend() then return true end
