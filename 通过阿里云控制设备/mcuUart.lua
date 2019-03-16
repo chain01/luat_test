@@ -16,41 +16,27 @@ local uartID = 2
 
 local function taskRead()
     local cacheData = ""
-	local Uart_Datalen
-	local jsondata
-	local temp
-	local humy
-	local basedata =
-		{
-			t = 3,
-			datatype = 1,
-			datas = {temp=0,humy=0},
-			msgid = 123,
-		}
     while true do
         local s = uart.read(uartID,"*l")
         if s == "" then
             uart.on(uartID,"receive",function() sys.publish("UART_RECEIVE") end)
-            if not sys.waitUntil("UART_RECEIVE",1500) then
-				if	string.find(cacheData,"temp") then
+            if not sys.waitUntil("UART_RECEIVE",1000) then
+				if string.find(cacheData,"on") then
 					Uart_Datalen=string.len(cacheData)
-					basedata["datas"]["temp"]=cacheData:sub(5,6)
-					basedata["datas"]["humy"]=cacheData:sub(11,12)
-					jsondata = json.encode(basedata)
-					sys.publish("UART_RECV_DATA",jsondata)
-					cacheData=""
+					Uart_Num1=cacheData:sub(3,4)
+					Uart_Num2=cacheData:sub(5,5)
+					sys.publish("UART_RECV_DATA",Uart_Num1,Uart_Num2)
 				end
-                sys.publish("UART_RECV_DATA",cacheData:sub(1,1024))
+                
                 cacheData = cacheData:sub(1025,-1)
             end
             uart.on(uartID,"receive")
         else
             cacheData = cacheData..s
-			if	string.find(cacheData,"on") then
-				if cacheData:len()>=1024 then
-					cacheData = cacheData:sub(1025,-1)
-				end
-			end	
+            if cacheData:len()>=1024 then
+                sys.publish("UART_RECV_DATA",cacheData:sub(1,1024))
+                cacheData = cacheData:sub(1025,-1)
+            end
         end
     end
 end

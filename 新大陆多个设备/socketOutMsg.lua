@@ -19,8 +19,8 @@ end
 --@string device 设备标识 
 --@string key 传输密钥
 function link()
-	local device="testkey01"
-	local key="92b7ae622ea74262b9f0db8302272965"
+	local device="STC15IOT"
+	local key="0338ba0fadc340c88b051f231388a05f"
 	local Json_Key
 	local Json_Str1=[[{"t": 1,"device": "]]
 	local Json_Str2=[[","key":"]]

@@ -17,6 +17,7 @@ function proc(socketClient)
 	local Rec_Data
 	local Rec_Status
 	local Rec_Cmd
+	local Rec_devices
 	local key = pins.setup(pio.P0_6,1)
     while true do
         result,data = socketClient:recv(2000)
@@ -36,15 +37,29 @@ function proc(socketClient)
             end
 			if string.find(data,"data") then
 				Rec_Data=json.decode(data)
+				Rec_devices=Rec_Data["apitag"]
 				Rec_Cmd=Rec_Data["data"]
-				if	Rec_Cmd==1 then
-					sys.publish("SOCKET_RECV_DATA","On")
-					key(0)
-					sys.wait(1000)          -- 挂起1000ms，同理为每隔1000ms运行一次
-					key(1)
-					else
-					sys.publish("SOCKET_RECV_DATA","Off")
-				end
+				if  "nl_lamp"==Rec_devices then
+					if	Rec_Cmd==1 then
+						sys.publish("SOCKET_RECV_DATA","LEDON")
+						else
+						sys.publish("SOCKET_RECV_DATA","LEDOFF")
+					end
+				end	
+				if  "nl_fan"==Rec_devices then
+					if	Rec_Cmd==1 then
+						sys.publish("SOCKET_RECV_DATA","FANON")
+						else
+						sys.publish("SOCKET_RECV_DATA","FANOFF")
+					end
+				end	
+				if  "nl_hot"==Rec_devices then
+					if	Rec_Cmd==1 then
+						sys.publish("SOCKET_RECV_DATA","HOTON")
+						else
+						sys.publish("SOCKET_RECV_DATA","HOTOFF")
+					end
+				end						
 			end	
             --如果socketOutMsg中有等待发送的数据，则立即退出本循环
             if socketOutMsg.waitForSend() then return true end
