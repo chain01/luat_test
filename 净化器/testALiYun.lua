@@ -14,7 +14,7 @@ require"pm"
 
 --采用一机一密认证方案时：
 --PRODUCT_KEY为阿里云华东2站点上创建的产品的ProductKey，用户根据实际值自行修改
-local PRODUCT_KEY = "a1g4I24YJe3"
+local PRODUCT_KEY = "a1vqQSF14cw"
 --除了上面的PRODUCT_KEY外，还需要提供获取DeviceName的函数、获取DeviceSecret的函数
 --设备名称使用函数getDeviceName的返回值，默认为设备的IMEI
 --设备密钥使用函数getDeviceSecret的返回值，默认为设备的SN
@@ -66,7 +66,7 @@ local function getDeviceSecret()
     --return misc.getSn()
     
     --用户单体测试时，可以在此处直接返回阿里云的iot控制台上生成的设备密钥，例如return "y7MTCG6Gk33Ux26bbWSpANl4OaI0bg5Q"
-    return "eJkSZ2UkpMHt9FsAYPxNxySRkQeerYAS"
+    return "iSKVk1VBVwkm6KC9eaZwnC2jeUUUB5JT"
 end
 
 --阿里云客户端是否处于连接状态
@@ -78,7 +78,7 @@ local basedata =
 {
     method = "thing.event.property.post",
     id = "52490979",
-    params = {time_cmd=0,power=0},
+    params = {key1=0,key2=0},
     version = "1.0",
 }
 local jsondata
@@ -88,8 +88,8 @@ function Mqttrec(LeftFootbathTime,PowerSwitch)
 	if sConnected then
 	    LeftFootbathtime=tonumber(LeftFootbathTime)
 		Powerswitch=tonumber(PowerSwitch)
-		basedata["params"]["time_cmd"]=LeftFootbathtime
-		basedata["params"]["power"]=Powerswitch
+		basedata["params"]["key1"]=LeftFootbathtime
+		basedata["params"]["key2"]=Powerswitch
         jsondata = json.encode(basedata)
 		log.info("-------------------------",jsondata)
         aLiYun.publish("/sys/"..PRODUCT_KEY.."/"..getDeviceName().."/thing/event/property/post",jsondata,1)
@@ -106,23 +106,36 @@ end
 -- @number qos，消息质量等级
 -- @string payload，原始编码的消息负载
 local function rcvCbFnc(topic,qos,payload)
-local led1 = pins.setup(pio.P0_6,0)
+	local led1 = pins.setup(pio.P0_6,0)
+		 led2 = pins.setup(pio.P0_5,0)
     log.info("testALiYun.rcvCbFnc",topic,qos,payload)
 		local Rec_Data
-	local Rec_Cmd
-	if	string.find(payload,"time_cmd") then
+	local Rec_Cmd,Rec_Cmd2
+	if	string.find(payload,"key1") then
 		Rec_Data=json.decode(payload)
-		Rec_Cmd=Rec_Data["params"]["time_cmd"]
-		while Rec_Cmd>0 do
-		log.info("--------------ledon-----------------")
-		led1(1)
-		Mqttrec(Rec_Cmd,1)
-		Rec_Cmd=Rec_Cmd-1
-		sys.wait(10000)
+		Rec_Cmd=Rec_Data["params"]["key1"]
+		if Rec_Cmd == 1 then
+			log.info("--------------led1on-----------------")
+			led1(1)
+			Mqttrec(Rec_Cmd,0)
+		else
+			led1(0)
+			log.info("-----------led1off--------------")
+			Mqttrec(Rec_Cmd,0)
 		end
-		led1(0)
-		log.info("-----------ledoff--------------")
-		Mqttrec(Rec_Cmd,0)
+	end
+	if	string.find(payload,"key2") then
+		Rec_Data=json.decode(payload)
+		Rec_Cmd1=Rec_Data["params"]["key2"]
+		if Rec_Cmd1 == 1 then
+			log.info("--------------led2on-----------------")
+			led2(1)
+			Mqttrec(0,Rec_Cmd1)
+		else
+			led2(0)
+			log.info("-----------led2off--------------")
+			Mqttrec(0,Rec_Cmd1)
+		end
 	end
 end
 
